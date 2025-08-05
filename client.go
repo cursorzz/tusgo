@@ -436,7 +436,18 @@ func (c *Client) tusRequest(ctx context.Context, req *http.Request) (response *h
 	if err == nil && response.StatusCode == http.StatusPreconditionFailed {
 		versions := response.Header.Get("Tus-Version")
 		err = ErrProtocol.WithText(fmt.Sprintf("request protocol version %q, server supported versions are %q", c.ProtocolVersion, versions))
+		return
 	}
+	if response != nil && response.Body != nil {
+		var bodyBytes []byte
+		bodyBytes, err = io.ReadAll(response.Body)
+		if err != nil {
+			return
+		}
+		response.Body.Close() // Close the original body
+		response.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+	}
+
 	return
 }
 
