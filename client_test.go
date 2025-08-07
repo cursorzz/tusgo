@@ -73,11 +73,13 @@ var _ = Describe("Client", func() {
 	Context("tusRequest", func() {
 		Context("happy path", func() {
 			It("should make a request, return response", func() {
-				srvMock.AddMocks(tRequest(http.MethodGet, "/foo", tusHeaders).Reply(tReply(reply.OK())))
+				srvMock.AddMocks(tRequest(http.MethodGet, "/foo", tusHeaders).Reply(tReply(reply.OK()).Body([]byte("test"))))
 				req, err := http.NewRequest(http.MethodGet, srvMock.URL()+"/foo", nil)
 				Ω(err).Should(Succeed())
-
-				Ω(testClient.tusRequest(context.Background(), req)).ShouldNot(BeNil())
+				resp, err := testClient.tusRequest(context.Background(), req)
+				Ω(err).Should(Succeed())
+				Ω(resp).ShouldNot(BeNil())
+				Ω(resp).Should(HaveHTTPBody([]byte("test")))
 			})
 			When("OPTIONS request", func() {
 				It("should not set Tus-Resumable header", func() {

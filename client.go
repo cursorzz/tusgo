@@ -73,7 +73,7 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 }
 
 // GetUpload obtains an upload by location. Fills `u` variable with upload info.
-// Returns http response from server (with closed body) and error (if any).
+// Returns http response from server  and error (if any).
 //
 // For regular upload we fill in just a remote offset and set Partial flag. For final concatenated uploads we also
 // may set upload size (if server provided). Also, we may set remote offset to OffsetUnknown for concatenated final
@@ -143,7 +143,7 @@ func (c *Client) GetUpload(u *Upload, location string) (response *http.Response,
 }
 
 // CreateUpload creates upload on the server. Fills `u` with upload that was created.
-// Returns http response from server (with closed body) and error (if any).
+// Returns http response from server  and error (if any).
 //
 // Server must support "creation" extension. We create an upload with given size and metadata.
 // If Partial flag is true, we create a partial upload. Metadata map keys must not contain spaces.
@@ -264,7 +264,8 @@ func (c *Client) CreateUploadWithData(u *Upload, data []byte, remoteSize int64, 
 }
 
 // DeleteUpload deletes an upload. Receives `u` with upload to be deleted. Returns http response from server
-// (with closed body) and error (if any).
+//
+//	and error (if any).
 //
 // Server must support "termination" extension to be able to delete uploads.
 //
@@ -303,7 +304,8 @@ func (c *Client) DeleteUpload(u Upload) (response *http.Response, err error) {
 
 // ConcatenateUploads makes a request to concatenate the partial uploads created before into one final upload. Fills
 // `final` with upload that was created. Returns http response from server
-// (with closed body) and error (if any).
+//
+//	and error (if any).
 //
 // Server must support "concatenation" extension for this feature. Typically, partial uploads must be fully uploaded
 // to the server, but if server supports "concatenation-unfinished" extension, it may accept unfinished uploads.
@@ -364,7 +366,8 @@ func (c *Client) ConcatenateUploads(final *Upload, partials []Upload, meta map[s
 
 // ConcatenateStreams makes a request to concatenate partial uploads from given streams into one final upload. Final
 // Upload object will be filled with location of a created final upload. Returns http response from server
-// (with closed body) and error (if any).
+//
+//	and error (if any).
 //
 // Server must support "concatenation" extension for this feature. Streams with pointers that not point to an end of
 // streams are treated as unfinished -- server must support "concatenation-unfinished" in this case.
@@ -390,7 +393,7 @@ func (c *Client) ConcatenateStreams(final *Upload, streams []*UploadStream, meta
 }
 
 // UpdateCapabilities gathers server capabilities and updates Capabilities client variable. Returns http response
-// from server (with closed body) and error (if any).
+// from server  and error (if any).
 func (c *Client) UpdateCapabilities() (response *http.Response, err error) {
 	var req *http.Request
 	if req, err = c.GetRequest(http.MethodOptions, c.BaseURL.String(), nil, c, c.client); err != nil {
@@ -436,7 +439,18 @@ func (c *Client) tusRequest(ctx context.Context, req *http.Request) (response *h
 	if err == nil && response.StatusCode == http.StatusPreconditionFailed {
 		versions := response.Header.Get("Tus-Version")
 		err = ErrProtocol.WithText(fmt.Sprintf("request protocol version %q, server supported versions are %q", c.ProtocolVersion, versions))
+		return
 	}
+	if response != nil && response.Body != nil {
+		var bodyBytes []byte
+		bodyBytes, err = io.ReadAll(response.Body)
+		if err != nil {
+			return
+		}
+		response.Body.Close() // Close the original body
+		response.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+	}
+
 	return
 }
 
