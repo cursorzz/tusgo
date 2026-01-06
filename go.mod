@@ -1,4 +1,4 @@
-module github.com/bdragon300/tusgo
+module github.com/cursorzz/tusgo
 
 go 1.22.0
 

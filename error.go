@@ -50,7 +50,7 @@ func (te TusError) WithResponse(r *http.Response) TusError {
 			te.inner = fmt.Errorf("HTTP %d: %s", r.StatusCode, b[:l])
 		}
 	} else {
-		panic(err)
+		te.inner = fmt.Errorf("HTTP %d: <unable to read body: %v>", r.StatusCode, err)
 	}
 	return te
 }
