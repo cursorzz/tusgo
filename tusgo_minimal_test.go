@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/bdragon300/tusgo"
+	"github.com/cursorzz/tusgo"
 )
 
 func Example_minimal() {

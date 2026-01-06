@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bdragon300/tusgo"
+	"github.com/cursorzz/tusgo"
 )
 
 func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {

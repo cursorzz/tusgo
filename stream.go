@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bdragon300/tusgo/checksum"
+	"github.com/cursorzz/tusgo/checksum"
 )
 
 // NewUploadStream constructs a new upload stream. Receives a http client that will be used to make requests, and
